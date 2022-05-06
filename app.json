@@ -1,0 +1,7 @@
+{
+  "name": "AntiCheatingOnlineMobile",
+  "displayName": "AntiCheatingOnlineMobile",
+  "android": {
+    "package": "com.anticheatingonlinemobile"
+  }
+}
