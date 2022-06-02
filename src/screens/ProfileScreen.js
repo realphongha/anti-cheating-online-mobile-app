@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Text,
   View,
   StyleSheet,
+  Image
 } from 'react-native';
 import { Button } from '../components/Button';
 import Orientation from 'react-native-orientation';
@@ -13,13 +14,21 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import AuthContext from '../context/AuthContext';
+import { showMessage } from "react-native-flash-message";
+import { UserApi } from '../api/UserApi';
 
 export default function ProfileScreen({ navigation }) {
   const [avatar, setAvatar] = useState(null);
+  const [newAvatar, setNewAvatar] = useState(null);
   const [changeAvatarBtn, setChangeAvatarBtn] = useState(false);
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     Orientation.lockToPortrait();
+    if (authContext.currentUser.avatar) {
+      setAvatar(authContext.currentUser.avatar["$binary"].base64);
+    }
   }, []);
 
   const onChangePassword = () => {
@@ -31,7 +40,48 @@ export default function ProfileScreen({ navigation }) {
   }
 
   const onChangeAvatar = () => {
-    setChangeAvatarBtn(true);
+    setChangeAvatarBtn(!changeAvatarBtn);
+  }
+
+  const onSaveAvatar = async () => {
+    try {
+      let res = await UserApi.changeAvatar(authContext.token,
+        newAvatar);
+      if (res.data){
+        authContext.setCurrentUser(res.data);
+        showMessage({
+          title: "Thành công",
+          message: "Đổi ảnh đại diện thành công!",
+          type: "info"
+        });
+        setNewAvatar(null);
+        setChangeAvatarBtn(false);
+        setAvatar(res.data.avatar["$binary"].base64);
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Đổi ảnh đại diện không thành công. Vui lòng thử lại!",
+          type: "danger"
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      if (err.response && (err.response.status === 400)) {
+        showMessage({
+          title: "Lỗi",
+          message: err.response.data.message,
+          type: "danger"
+        });
+        console.log(err.response.data.message);
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Lỗi server",
+          type: "danger"
+        });
+        console.log("Internal error");
+      }
+    }
   }
 
   const takePhoto = async () => {
@@ -40,7 +90,19 @@ export default function ProfileScreen({ navigation }) {
       maxWidth: 640,
       mediaType: "photo",
     });
-    console.log(result);
+    try {
+      if (result.assets[0]) {
+        setNewAvatar(result.assets[0]);
+        console.log(newAvatar);
+      }
+    } catch (err) {
+      console.log(err);
+      showMessage({
+        title: "Lỗi",
+        message: "Không thể chọn ảnh!",
+        type: "danger"
+      });
+    }
   }
 
   const takePhotoFromLib = async () => {
@@ -49,67 +111,99 @@ export default function ProfileScreen({ navigation }) {
       maxWidth: 640,
       mediaType: "photo",
     });
-    console.log(result);
+    try {
+      if (result.assets[0]) {
+        setNewAvatar(result.assets[0]);
+        console.log(newAvatar);
+      }
+    } catch (err) {
+      console.log(err);
+      showMessage({
+        title: "Lỗi",
+        message: "Không thể chọn ảnh!",
+        type: "danger"
+      });
+    }
   }
 
   return (
     <View style={styles.container}>
       <View>
         <TouchableWithoutFeedback onPress={() => onChangeAvatar()}>
-          {avatar ?
-            <FontAwesomeIcon icon={faUser}
-              size={styles.avatarDefaultSize} />
-            :
-            <FontAwesomeIcon icon={faUser}
-              size={styles.avatarDefaultSize} />
+          {
+            newAvatar ?
+              <Image
+                source={{ uri: newAvatar.uri }}
+                style={styles.avatar} />
+              :
+              (avatar ?
+                <Image
+                  source={{ uri: `data:image/jpeg;base64,${avatar}` }}
+                  style={styles.avatar} />
+                :
+                <FontAwesomeIcon icon={faUser}
+                  size={styles.avatarDefaultSize} />
+              )
           }
         </TouchableWithoutFeedback>
       </View>
       {changeAvatarBtn &&
-      <Text style={styles.text}>
-        Change your avatar:
-      </Text>
+        <Text style={styles.text}>
+          Đổi ảnh đại diện:
+        </Text>
       }
       {changeAvatarBtn &&
-        <View style={{flexDirection: "row"}}>
+        <View style={{ flexDirection: "row" }}>
           <Button
-            title="Take a photo"
+            title="Chụp ảnh"
             onPress={() => takePhoto()}
             style={styles.btnSmall}
             outerStyle={styles.btnOuter}
           />
           <Button
-            title="From libary"
+            title="Từ thư viện"
             onPress={() => takePhotoFromLib()}
             style={styles.btnSmall}
             outerStyle={styles.btnOuter}
           />
+          {
+          newAvatar&&
+          <Button
+            title="Lưu"
+            onPress={() => onSaveAvatar()}
+            style={styles.btnSmall}
+            outerStyle={styles.btnOuter}
+          />
+          }
           <Button
             title=" X "
-            onPress={() => setChangeAvatarBtn(false)}
+            onPress={() => {
+              setChangeAvatarBtn(false);
+              setNewAvatar(null);
+            }}
             style={styles.btnSmallRed}
             outerStyle={styles.btnOuter}
           />
         </View>
       }
       <Text style={styles.bigText}>
-        Diana Kyle
+        {authContext.currentUser.name}
       </Text>
       <Text style={styles.text}>
-        diana1@example.com
+        {authContext.currentUser.email}
       </Text>
       <Text style={styles.text}>
-        0976574346
+        {authContext.currentUser.phone}
       </Text>
 
       <Button
-        title="Change password"
+        title="Đổi mật khẩu"
         onPress={() => onChangePassword()}
         style={styles.btn}
         outerStyle={styles.btnOuter}
       />
       <Button
-        title="Edit profile"
+        title="Sửa thông tin"
         onPress={() => onEditProfile()}
         style={styles.btn}
         outerStyle={styles.btnOuter}
@@ -166,4 +260,9 @@ const styles = StyleSheet.create({
     margin: 20
   },
   avatarDefaultSize: 150,
+  avatar: {
+    height: 150,
+    width: 150,
+    borderRadius: 150/2
+  }
 });

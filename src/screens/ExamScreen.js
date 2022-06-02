@@ -102,18 +102,18 @@ export default function ExamScreen({ navigation }) {
         />
       )}
       {perm && devices[camPosition] && (
-        <Button style={styles.btn} onPress={() => onFlip()} title="Flip" />
+        <Button style={styles.btn} onPress={() => onFlip()} title="Lật Camera" />
       )}
       <Button
         style={styles.btn}
         onPress={() => initCam()}
-        title="Init Camera"
+        title="Khởi động Camera"
       />
       <Button
         style={styles.requestEndBtn}
         outerStyle={styles.requestEndBtnOuter}
         onPress={() => requestEnd()}
-        title="Request End"
+        title="Yêu cầu dừng thi"
       />
     </View>
   );

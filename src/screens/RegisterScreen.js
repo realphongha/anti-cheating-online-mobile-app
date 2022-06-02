@@ -8,6 +8,8 @@ import {
 import { Button } from '../components/Button';
 import Orientation from 'react-native-orientation';
 import * as constants from '../utils/Constants';
+import { UserApi } from '../api/UserApi';
+import { showMessage } from "react-native-flash-message";
 
 export default function RegisterScreen({navigation}) {
   const [email, setEmail] = useState("");
@@ -20,8 +22,34 @@ export default function RegisterScreen({navigation}) {
     Orientation.lockToPortrait();
   }, []);
 
-  const onRegister = () => {
-    console.log("register");
+  const onRegister = async () => {
+    try {
+      let res = await UserApi.register(email, password, confirmPassword,
+        name, phone);
+      showMessage({
+        title: "Thành công",
+        message: "Đăng ký tài khoản thành công. Vui lòng đăng nhập!",
+        type: "info"
+      });
+      navigation.navigate("Log In");
+    } catch (err) {
+      console.log(err);
+      if (err.response && err.response.status === 400) {
+        showMessage({
+          title: "Lỗi",
+          message: err.response.data.message,
+          type: "danger"
+        });
+        console.log(err.response.data.message);
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Lỗi server",
+          type: "danger"
+        });
+        console.log("Internal error");
+      }
+    }
   }
 
   return (
@@ -31,52 +59,52 @@ export default function RegisterScreen({navigation}) {
         style={styles.input}
         onChangeText={setEmail}
         value={email}
-        placeholder="Enter email..."
+        placeholder="Nhập email..."
         placeholderTextColor={constants.gray}
         keyboardType="email-address"
         required
       />
-      <Text style={styles.text}>Password:</Text>
+      <Text style={styles.text}>Mật khẩu:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setPassword}
         value={password}
-        placeholder="Enter password..."
+        placeholder="Nhập mật khẩu..."
         placeholderTextColor={constants.gray}
         secureTextEntry={true}
         required
       />
-      <Text style={styles.text}>Confirm password:</Text>
+      <Text style={styles.text}>Xác nhận mật khẩu:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setConfirmPassword}
         value={confirmPassword}
-        placeholder="Enter confirm password..."
+        placeholder="Nhập lại mật khẩu..."
         placeholderTextColor={constants.gray}
         secureTextEntry={true}
         required
       />
-      <Text style={styles.text}>Full name:</Text>
+      <Text style={styles.text}>Họ tên:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setName}
         value={name}
-        placeholder="Enter your full name..."
+        placeholder="Nhập họ tên..."
         placeholderTextColor={constants.gray}
         required
       />
-      <Text style={styles.text}>Phone number:</Text>
+      <Text style={styles.text}>Số điện thoại:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setPhone}
         value={phone}
-        placeholder="Enter phone number..."
+        placeholder="Nhập số điện thoại..."
         placeholderTextColor={constants.gray}
         keyboardType="numeric"
         required
       />
       <Button
-        title="Register"
+        title="Đăng ký"
         onPress={() => onRegister()}
         style={styles.btn}
         outerStyle={styles.btnOuter}

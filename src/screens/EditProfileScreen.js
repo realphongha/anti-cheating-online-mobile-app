@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   Text,
   TextInput,
@@ -8,18 +8,62 @@ import {
 import { Button } from '../components/Button';
 import Orientation from 'react-native-orientation';
 import * as constants from '../utils/Constants';
+import { UserApi } from '../api/UserApi';
+import { showMessage } from "react-native-flash-message";
+import AuthContext from '../context/AuthContext';
 
 export default function EditProfileScreen({navigation}) {
-  const [email, setEmail] = useState("diana1@example.com");
-  const [name, setName] = useState("Diana Kyle");
-  const [phone, setPhone] = useState("0976574346");
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
+    setEmail(authContext.currentUser.email);
+    setName(authContext.currentUser.name);
+    setPhone(authContext.currentUser.phone);
     Orientation.lockToPortrait();
   }, []);
 
-  const onSave = () => {
-    console.log("save profile");
+  const onSave = async () => {
+    try {
+      let res = await UserApi.editCurrentUser(
+        authContext.token, email, null, null, null, 
+        name, phone, null
+      );
+      if (res.data){
+        authContext.setCurrentUser(res.data);
+        showMessage({
+          title: "Thành công",
+          message: "Sửa thông tin thành công!",
+          type: "info"
+        });
+        navigation.navigate("Profile");
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Sửa thông tin không thành công. Vui lòng thử lại!",
+          type: "danger"
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      if (err.response && (err.response.status === 400)) {
+        showMessage({
+          title: "Lỗi",
+          message: err.response.data.message,
+          type: "danger"
+        });
+        console.log(err.response.data.message);
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Lỗi server",
+          type: "danger"
+        });
+        console.log("Internal error");
+      }
+    }
   }
 
   return (
@@ -29,32 +73,32 @@ export default function EditProfileScreen({navigation}) {
         style={styles.input}
         onChangeText={setEmail}
         value={email}
-        placeholder="Enter email..."
+        placeholder="Nhập email..."
         placeholderTextColor={constants.gray}
         keyboardType="email-address"
         required
       />
-      <Text style={styles.text}>Full name:</Text>
+      <Text style={styles.text}>Họ tên:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setName}
         value={name}
-        placeholder="Enter your full name..."
+        placeholder="Nhập họ tên..."
         placeholderTextColor={constants.gray}
         required
       />
-      <Text style={styles.text}>Phone number:</Text>
+      <Text style={styles.text}>Số điện thoại:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setPhone}
         value={phone}
-        placeholder="Enter phone number..."
+        placeholder="Nhập số điện thoại..."
         placeholderTextColor={constants.gray}
         keyboardType="numeric"
         required
       />
       <Button
-        title="Save"
+        title="Lưu"
         onPress={() => onSave()}
         style={styles.btn}
         outerStyle={styles.btnOuter}

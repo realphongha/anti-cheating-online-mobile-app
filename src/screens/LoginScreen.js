@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Text,
   TextInput,
@@ -8,20 +8,69 @@ import {
 import { Button } from '../components/Button';
 import Orientation from 'react-native-orientation';
 import * as constants from '../utils/Constants';
+import AuthContext from '../context/AuthContext';
+import { UserApi } from '../api/UserApi';
+import { showMessage } from "react-native-flash-message";
+import * as Keychain from 'react-native-keychain';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
+    checkSavedAccount();
     Orientation.lockToPortrait();
     navigation.setOptions({
       headerShown: false,
     });
   }, []);
 
-  const onLogin = () => {
-    navigation.navigate("Classes");
+  const checkSavedAccount = async () => {
+    const credentials = await Keychain.getGenericPassword();
+    if (credentials) {
+      await onLogin(credentials.username, credentials.password);
+    }
+    setIsLoading(false);
+  }
+
+  const onLogin = async (email, password) => {
+    try {
+      let res = await UserApi.login(email, password);
+      // console.log(res);
+      let data = res.data;
+      let role = data.user.role;
+      if (role === constants.USER_ROLE_STUDENT) {
+        authContext.setToken(data.token);
+        authContext.setCurrentUser(data.user);
+        await Keychain.setGenericPassword(email, password);
+        navigation.navigate("Classes");
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Vui lòng đăng nhập bằng tài khoản học sinh!",
+          type: "danger"
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      if (err.response && (err.response.status === 400 || err.response.status === 401)) {
+        showMessage({
+          title: "Lỗi",
+          message: err.response.data.message,
+          type: "danger"
+        });
+        console.log(err.response.data.message);
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Lỗi server",
+          type: "danger"
+        });
+        console.log("Internal error");
+      }
+    }
   }
 
   const onRegister = () => {
@@ -29,6 +78,7 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
+    !isLoading?
     <View style={styles.container}>
       <Text style={styles.logoText}>
         Online Exam Anti-cheating
@@ -37,7 +87,7 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
         onChangeText={setEmail}
         value={email}
-        placeholder="Enter email..."
+        placeholder="Nhập email..."
         placeholderTextColor={constants.gray}
         keyboardType="email-address"
         required
@@ -46,24 +96,26 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
         onChangeText={setPassword}
         value={password}
-        placeholder="Enter password..."
+        placeholder="Nhập mật khẩu..."
         placeholderTextColor={constants.gray}
         secureTextEntry={true}
         required
       />
       <Button
-        title="Log in"
-        onPress={() => onLogin()}
+        title="Đăng nhập"
+        onPress={() => onLogin(email, password)}
         style={styles.btn}
         outerStyle={styles.btnOuter}
       />
       <Button
-        title="Register"
+        title="Đăng ký"
         onPress={() => onRegister()}
         style={styles.btn}
         outerStyle={styles.btnOuter}
       />
     </View>
+    :
+    <View style={styles.container}></View>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   Text,
   TextInput,
@@ -8,54 +8,87 @@ import {
 import { Button } from '../components/Button';
 import Orientation from 'react-native-orientation';
 import * as constants from '../utils/Constants';
+import { UserApi } from '../api/UserApi';
+import { showMessage } from "react-native-flash-message";
+import AuthContext from '../context/AuthContext';
 
 export default function ChangePasswordScreen({navigation}) {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     Orientation.lockToPortrait();
   }, []);
 
-  const onChangePassword = () => {
-    console.log("change password");
+  const onChangePassword = async () => {
+    try {
+      let res = await UserApi.editCurrentUser(
+        authContext.token, null, 
+        oldPassword, newPassword, confirmPassword, 
+        null, null, null
+      );
+      showMessage({
+        title: "Thành công",
+        message: "Đổi mật khẩu thành công!",
+        type: "info"
+      });
+      navigation.navigate("Profile");
+    } catch (err) {
+      console.log(err);
+      if (err.response && (err.response.status === 400)) {
+        showMessage({
+          title: "Lỗi",
+          message: err.response.data.message,
+          type: "danger"
+        });
+        console.log(err.response.data.message);
+      } else {
+        showMessage({
+          title: "Lỗi",
+          message: "Lỗi server",
+          type: "danger"
+        });
+        console.log("Internal error");
+      }
+    }
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Old password:</Text>
+      <Text style={styles.text}>Mật khẩu cũ:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setOldPassword}
         value={oldPassword}
-        placeholder="Enter old password..."
+        placeholder="Nhập mật khẩu cũ..."
         placeholderTextColor={constants.gray}
         secureTextEntry={true}
         required
       />
-      <Text style={styles.text}>New password:</Text>
+      <Text style={styles.text}>Mật khẩu mới:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setNewPassword}
         value={newPassword}
-        placeholder="Enter new password..."
+        placeholder="Nhập mật khẩu mới..."
         placeholderTextColor={constants.gray}
         secureTextEntry={true}
         required
       />
-      <Text style={styles.text}>Confirm password:</Text>
+      <Text style={styles.text}>Xác nhận mật khẩu:</Text>
       <TextInput
         style={styles.input}
         onChangeText={setConfirmPassword}
         value={confirmPassword}
-        placeholder="Enter new password again..."
+        placeholder="Nhập lại mật khẩu mới..."
         placeholderTextColor={constants.gray}
         secureTextEntry={true}
         required
       />
       <Button
-        title="Save"
+        title="Lưu"
         onPress={() => onChangePassword()}
         style={styles.btn}
         outerStyle={styles.btnOuter}

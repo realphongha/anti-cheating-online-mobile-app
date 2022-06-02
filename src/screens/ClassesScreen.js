@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   Text,
   TextInput,
   View,
   StyleSheet,
   TouchableWithoutFeedback,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
 import { Button } from '../components/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -17,22 +18,49 @@ import * as constants from '../utils/Constants';
 import { ScrollView } from 'react-native-gesture-handler';
 import { toDDMMYYHHSS } from '../utils/DateTime';
 import { useIsFocused } from '@react-navigation/native';
+import AuthContext from '../context/AuthContext';
+import * as Keychain from 'react-native-keychain';
+import { showMessage } from "react-native-flash-message";
+import { ClassApi } from '../api/ClassApi';
 
 export default function ClassesScreen({ navigation }) {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [focusId, setFocusId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [classesPerPage, setClassesPerPage] = useState(3);
+  const [countAll, setCountAll] = useState(0);
+  const [loggedOut, setLoggedOut] = useState(false);
+  const [classes, setClasses] = useState([]);
   const isFocused = useIsFocused();  // to run useEffect() when go back
+  const authContext = useContext(AuthContext);
+  const CLASS_DATE_STATUS = {
+    0: "Chưa diễn ra",
+    1: "Đang thi",
+    2: "Thi xong"
+  };
+  const CLASS_DATE_STATUS_COLOR = {
+    0: constants.gray,
+    1: constants.green,
+    2: constants.red,
+  };
 
   useEffect(() => {
+    setFocusId(null);
     if (isFocused) {
       navigation.setOptions({
         headerRight: () => (
           <View style={styles.headerRight}>
             <TouchableWithoutFeedback onPress={() => goToProfile()}>
+              {
+              authContext.currentUser.avatar?
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${authContext.currentUser.avatar["$binary"].base64}` }}
+                style={styles.avatar} />
+              :
               <FontAwesomeIcon icon={faUser}
                 style={styles.svgBtn} size={styles.svgBtnSize} />
+              }
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback onPress={() => onLogOut()}>
               <FontAwesomeIcon icon={faRightFromBracket}
@@ -41,26 +69,68 @@ export default function ClassesScreen({ navigation }) {
           </View>
         ),
         headerLeft: () => null,
-        headerTitle: "Welcome, Diana!"
+        headerTitle: `Xin chào, ${authContext.currentUser.name}!`
       });
       Orientation.lockToPortrait();
     }
-  }, [isFocused]);
+    if (!loggedOut){
+      getListClasses();
+    }
+  }, [isFocused, currentPage, searchTerm]);
+
+  const getListClasses = async () => {
+    try {
+      let res = await ClassApi.getList(authContext.token, currentPage, 
+        classesPerPage, searchTerm);
+      if (res.data) {
+        setClasses(res.data.data);
+        setCountAll(res.data.count);
+        // console.log(classes);
+      }
+    } catch (err) {
+      console.log(err);
+      showMessage({
+        title: "Lỗi",
+        message: "Lỗi server",
+        type: "danger"
+      });
+    }
+  }
+
+  const getStatus = (class_) => {
+    let start = new Date(class_.start["$date"]);
+    let end = class_.end?new Date(class_.end["$date"]):null;
+    if (new Date() < start){
+      return 0;
+    } else if (end) {
+      return 2;
+    } else {
+      return 1;
+    }
+  }
 
   const goToProfile = () => {
     navigation.navigate("Profile");
   }
 
-  const onLogOut = () => {
-    navigation.navigate("Log In");
+  const onLogOut = async () => {
+    setLoggedOut(true);
+    await navigation.navigate("Log In");
+    authContext.setToken(null);
+    authContext.setCurrentUser(null);
+    await Keychain.resetGenericPassword();
   }
 
   const onNextPage = () => {
-    console.log("next page");
+    if (currentPage*classesPerPage < countAll) {
+      setCurrentPage(currentPage+1);
+    }
   }
 
   const onPrevPage = () => {
-    console.log("prev page");
+    if (currentPage > 1){
+      setCurrentPage(currentPage-1);
+    }
   }
 
   const onJoinClass = () => {
@@ -69,36 +139,38 @@ export default function ClassesScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.bigText}>My Classes (5)</Text>
+      <Text style={styles.bigText}>Lớp thi của tôi ({countAll})</Text>
       <TextInput
         style={styles.search}
-        onChangeText={setSearchTerm}
+        onChangeText={text => {
+          setSearchTerm(text);
+        }}
         value={searchTerm}
-        placeholder="Type here to search..."
+        placeholder="Nhập để tìm kiếm..."
         placeholderTextColor={constants.gray}
       />
       <ScrollView style={styles.classes}>
-        {[...Array(10)].map((x, i) => (
+        {classes.map((class_, i) => (
           <TouchableOpacity onPress={() => setFocusId(i)} key={i}>
             <View style={styles.classCard}>
               <View style={{
                 flexDirection: "column",
                 flex: 3,
               }}>
-                <Text style={styles.fairlyBigText}>Class A</Text>
-                <Text style={styles.text}>{toDDMMYYHHSS(new Date())}</Text>
-                <Text style={styles.text}>{toDDMMYYHHSS(new Date())}</Text>
+                <Text style={styles.fairlyBigText}>{class_.name}</Text>
+                <Text style={styles.text}>{toDDMMYYHHSS(new Date(class_.start["$date"]))}</Text>
+                <Text style={styles.text}>{class_.end?toDDMMYYHHSS(new Date(class_.end["$date"])):"Chưa có"}</Text>
                 {(i === focusId) &&
-                  <Text style={styles.boldText}>Supervisor:</Text>
+                  <Text style={styles.boldText}>Giám thị:</Text>
                 }
                 {(i === focusId) &&
-                  <Text style={styles.text}>John Smith</Text>
+                  <Text style={styles.text}>{class_.supervisor.name} ({class_.supervisor.email})</Text>
                 }
                 {(i === focusId) &&
-                  <Text style={styles.boldText}>Status:</Text>
+                  <Text style={styles.boldText}>Trạng thái:</Text>
                 }
                 {(i === focusId) &&
-                  <Text style={styles.text}>Not started</Text>
+                  <Text style={styles.text}>{CLASS_DATE_STATUS[getStatus(class_)]}</Text>
                 }
               </View>
               <View style={{
@@ -106,7 +178,8 @@ export default function ClassesScreen({ navigation }) {
                 flex: 1,
                 alignItems: "center"
               }}>
-                <FontAwesomeIcon icon={faCircle} color={constants.green}
+                <FontAwesomeIcon icon={faCircle} 
+                  color={CLASS_DATE_STATUS_COLOR[getStatus(class_)]}
                   style={styles.svgBtn} size={styles.svgBtnSizeSmall} />
                 <TouchableWithoutFeedback onPress={() => onJoinClass()}>
                   <FontAwesomeIcon icon={faAngleRight}
@@ -120,11 +193,13 @@ export default function ClassesScreen({ navigation }) {
       <View style={styles.navigator}>
         <TouchableOpacity onPress={() => onPrevPage()}>
           <FontAwesomeIcon icon={faAngleLeft}
+            color={currentPage > 1?constants.black:constants.gray}
             style={styles.navigatorBtn} size={styles.svgBtnSize} />
         </TouchableOpacity>
-        <Text style={styles.navigatorBtn}>Page {currentPage}</Text>
+        <Text style={styles.navigatorBtn}>Trang {currentPage} trên {Math.ceil(countAll/classesPerPage)}</Text>
         <TouchableOpacity onPress={() => onNextPage()}>
           <FontAwesomeIcon icon={faAngleRight}
+            color={currentPage*classesPerPage < countAll?constants.black:constants.gray}
             style={styles.navigatorBtn} size={styles.svgBtnSize} />
         </TouchableOpacity>
       </View>
@@ -217,5 +292,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     marginTop: 10,
+  },
+  avatar: {
+    width: 25,
+    height: 25,
+    borderRadius: 25/2,
+    margin: 10
   }
 });
