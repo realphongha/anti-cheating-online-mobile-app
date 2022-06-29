@@ -148,7 +148,7 @@ public class NanoDet {
             int stride = centerPriors.get(i)[2];
             int maxCls = Utils.findLargestFloat(clsPreds[i]);
             float score = clsPreds[i][maxCls];
-            if (score > Constants.SCORE_THRESH[maxCls]){
+            if (score > Constants.SCORE_THRESH[maxCls] && maxCls != Constants.CELLPHONE_CLS){
                 float[] bbox = new float[6];
                 distance2bbox(bbox, disPreds[i], x, y, stride);
                 bbox[4] = score;

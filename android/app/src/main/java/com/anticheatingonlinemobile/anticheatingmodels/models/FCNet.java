@@ -29,14 +29,14 @@ public class FCNet {
     private FloatBuffer preProcess(float[][] pose) {
         FloatBuffer inputBuffer = FloatBuffer.allocate(Constants.ACTION_INPUT_JOINTS *
                 Constants.ACTION_INPUT_CHANNELS);
-        double rad = PointUtils.angle((pose[6][0]+pose[5][0]-pose[8][0]-pose[7][0])/2,
-                (pose[6][1]+pose[5][1]-pose[8][1]-pose[7][1])/2);
-        float[][] poseRotated = PointUtils.rotateKps(pose, rad);
+//        double rad = PointUtils.angle((pose[6][0]+pose[5][0]-pose[8][0]-pose[7][0])/2,
+//                (pose[6][1]+pose[5][1]-pose[8][1]-pose[7][1])/2);
+//        pose = PointUtils.rotateKps(pose, rad);
         float min0 = 9999999;
         float max0 = -9999999;
         float min1 = 9999999;
         float max1 = -9999999;
-        for (float[] point: poseRotated){
+        for (float[] point: pose){
             if (point[0] < min0) min0 = point[0];
             if (point[0] > max0) max0 = point[0];
             if (point[1] < min1) min1 = point[1];
@@ -44,7 +44,7 @@ public class FCNet {
         }
         inputBuffer.rewind();
         int idx = 0;
-        for (float[] point: poseRotated){
+        for (float[] point: pose){
             inputBuffer.put(idx++, (point[0] - min0) / (max0 - min0));
             inputBuffer.put(idx++, (point[1] - min1) / (max1 - min1));
             if (Constants.ACTION_INPUT_CHANNELS == 3) {

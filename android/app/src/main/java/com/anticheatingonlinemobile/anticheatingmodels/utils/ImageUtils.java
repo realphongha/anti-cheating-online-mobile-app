@@ -1,15 +1,23 @@
 package com.anticheatingonlinemobile.anticheatingmodels.utils;
 
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.camera.core.ImageProxy;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.List;
 
 public class ImageUtils {
 
@@ -71,26 +79,6 @@ public class ImageUtils {
         imageToByteBuffer(image, outputBuffer, pixelCount);
         return outputBuffer;
     }
-
-//    private static byte[] yuv420888ToNv21(ImageProxy image) {
-//        ImageProxy.PlaneProxy[] planes = image.getPlanes();
-//        ImageProxy.PlaneProxy y = planes[0];
-//        ImageProxy.PlaneProxy u = planes[1];
-//        ImageProxy.PlaneProxy v = planes[2];
-//        ByteBuffer yBuffer = y.getBuffer();
-//        ByteBuffer uBuffer = u.getBuffer();
-//        ByteBuffer vBuffer = v.getBuffer();
-//        int ySize = yBuffer.remaining();
-//        int uSize = uBuffer.remaining();
-//        int vSize = vBuffer.remaining();
-//        byte[] nv21 = new byte[ySize + uSize + vSize];
-//        // U and V are swapped
-//        yBuffer.get(nv21, 0, ySize);
-//        vBuffer.get(nv21, ySize, vSize);
-//        uBuffer.get(nv21, ySize + vSize, uSize);
-//
-//        return nv21;
-//    }
 
     public static void imageToByteBuffer(ImageProxy image, byte[] outputBuffer, int pixelCount) {
         assert(image.getFormat() == ImageFormat.YUV_420_888);
@@ -155,5 +143,41 @@ public class ImageUtils {
                 }
             }
         }
+    }
+
+    public static void drawBoxes(List<float[]> boxes, Canvas canvas, String[] clsString) {
+        for (float[] box: boxes) {
+            int x0 = Math.round(box[0]);
+            int y0 = Math.round(box[1]);
+            int x1 = Math.round(box[2]);
+            int y1 = Math.round(box[3]);
+            int cls = Math.round(box[5]);
+            Paint paint = new Paint();
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setColor(Color.RED);
+            paint.setAntiAlias(true);
+            Rect rect = new Rect(x0, y0, x1, y1);
+            canvas.drawRect(rect, paint);
+            paint.setTextSize(20);
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawText(clsString[cls], x0, y0, paint);
+        }
+    }
+
+    public static void drawPose(float[][] pose, Canvas canvas) {
+        for (float[] point: pose) {
+            Paint paint = new Paint();
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.RED);
+            paint.setAntiAlias(true);
+            canvas.drawCircle(point[0], point[1], 5, paint);
+        }
+    }
+
+    public static String bitmapToBase64(Bitmap bitmap, int quality) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, quality, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 }

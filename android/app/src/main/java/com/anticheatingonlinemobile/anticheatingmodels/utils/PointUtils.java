@@ -80,4 +80,9 @@ public class PointUtils {
         }
         return kpsRet;
     }
+
+    public static boolean rectContainsPoint(float x0, float y0, float x1, float y1,
+                                            float x, float y) {
+        return x > x0 && x < x1 && y > y0 && y < y1;
+    }
 }

@@ -23,8 +23,18 @@ export const ClassApi = {
         "Content-Type": "application/json",
         "x-access-token": token,
       },
-      maxContentLength: 100000000,
-      maxBodyLength: 1000000000,
+    })
+  },
+  getOne: (token, classId) => {
+    let url = `${constants.backend}/classes/${classId}`;
+    return axios({
+      method: "get",
+      url: url,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
     })
   },
 }

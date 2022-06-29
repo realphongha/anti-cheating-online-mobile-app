@@ -43,7 +43,8 @@
     "react-native-svg": "^12.3.0",
     "react-native-vision-camera": "2.11.2",
     "react-native-web": "0.17.1",
-    "rn-material-ui-textfield": "^1.0.6"
+    "rn-material-ui-textfield": "^1.0.6",
+    "socket.io-client": "^4.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

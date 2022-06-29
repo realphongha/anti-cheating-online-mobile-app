@@ -28,7 +28,7 @@ export default function ClassesScreen({ navigation }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [focusId, setFocusId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [classesPerPage, setClassesPerPage] = useState(3);
+  const [classesPerPage, setClassesPerPage] = useState(4);
   const [countAll, setCountAll] = useState(0);
   const [loggedOut, setLoggedOut] = useState(false);
   const [classes, setClasses] = useState([]);
@@ -133,8 +133,11 @@ export default function ClassesScreen({ navigation }) {
     }
   }
 
-  const onJoinClass = () => {
-    navigation.navigate("Exam");
+  const onJoinClass = (class_) => {
+    navigation.navigate("Exam", {
+      classId: class_.id,
+      settings: class_.settings
+    });
   }
 
   return (
@@ -181,7 +184,7 @@ export default function ClassesScreen({ navigation }) {
                 <FontAwesomeIcon icon={faCircle} 
                   color={CLASS_DATE_STATUS_COLOR[getStatus(class_)]}
                   style={styles.svgBtn} size={styles.svgBtnSizeSmall} />
-                <TouchableWithoutFeedback onPress={() => onJoinClass()}>
+                <TouchableWithoutFeedback onPress={() => onJoinClass(class_)}>
                   <FontAwesomeIcon icon={faAngleRight}
                     style={styles.svgBtn} size={styles.svgBtnSize} />
                 </TouchableWithoutFeedback>

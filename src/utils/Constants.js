@@ -1,7 +1,8 @@
 import { Dimensions, LayoutAnimation } from "react-native";
 const { width, height } = Dimensions.get("window");
+
 // Backend
-export const backend = "http://192.168.10.49:5000";
+export const backend = "http://20.247.88.157:5000";
 
 // Sizes
 export const windowWidth = width;
@@ -53,6 +54,24 @@ export const CLASS_STATUS = {
 export const CLASS_STATUS_MAP = Object.keys(CLASS_STATUS).map(key => 
     new Object({id: key, name: CLASS_STATUS[key]})
 );
+
+// Cheating types
+export const NO_CHEATING = 0;
+export const CHEATING_PERSONS = 1;
+export const CHEATING_LAPTOP = 2;
+export const CHEATING_MOUSE = 3;
+export const CHEATING_KEYBOARD = 4;
+export const CHEATING_WRONG_POSE = 5;
+export const EXCEPTION_HAPPENED = 6;
+export const NO_IMAGE = 7;
+
+export const ACTION_MAPPING = ["Đưa tay ra ngoài", "Cúi xuống",
+    "Nhìn ra ngoài", "Đang ngồi", "Ngồi sai tư thế"];
+export const SITTING_CLS = 3;
+export const SUPERVISING_PATIENCE = [-1, 4, 4, 2, 4, 4];
+export const MIN_SEND_CHEATING_IMG_TIMEOUT = 10000;  // ms
+export const INTERVAL_SEND_REGULAR_IMAGE = 5000;
+export const INTERVAL_SEND_CHEATING_IMAGE = 20;
 
 // DB
 export const DB_CHEATINGS_COLLECTION = "cheatings";
