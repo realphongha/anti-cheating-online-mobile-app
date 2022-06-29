@@ -2,7 +2,10 @@
 Mobile application for anti cheating online system
 
 # How to install
-Run ```react-native start```  
+Clone this repo: ```https://github.com/realphongha/anti-cheating-online-mobile-app.git```   
+Go to the root directory: ```cd anti-cheating-online-mobile-app```     
+Run ```npm install```   
+Run ```react-native start```    
 Go to android/app/build.gradle and change to "enableHermes: true"  
 Run ```react-native run-android```  
 Go to android/app/build.gradle and change back to "enableHermes: false"  
