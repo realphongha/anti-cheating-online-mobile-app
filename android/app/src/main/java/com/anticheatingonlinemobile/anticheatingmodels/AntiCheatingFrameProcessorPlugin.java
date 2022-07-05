@@ -161,7 +161,7 @@ public class AntiCheatingFrameProcessorPlugin extends FrameProcessorPlugin {
 
             int countUnconfidentPoints = 0;
             for (float[] point: pose){
-                if (point[2] < 0.1) {
+                if (point[2] < Constants.MIN_CONF_SCORES) {
                     countUnconfidentPoints++;
                 }
             }
@@ -246,7 +246,8 @@ public class AntiCheatingFrameProcessorPlugin extends FrameProcessorPlugin {
             Log.i("ReactNative", "Action result:");
             Log.i("ReactNative", Arrays.toString(prob));
             Log.i("ReactNative", Constants.ACTION_CLASSES[maxCls]);
-            if (maxCls != Constants.SITTING_CLS && prob[maxCls] > 0.6) {
+            if (maxCls != Constants.SITTING_CLS && 
+                prob[maxCls] > Constants.MIN_CONF_ACTIONS) {
                 results.pushInt(Constants.CHEATING_WRONG_POSE);
                 results.pushString(ImageUtils.bitmapToBase64(bitmap, 100));
                 results.pushInt(maxCls);

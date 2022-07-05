@@ -46,9 +46,11 @@ public class Constants {
     public static final int LOOK_OUTSIDE_CLS = 2;
     public static final int SITTING_CLS = 3;
     public static final int NOT_ENOUGH_VISIBLE_POINTS_CLS = 4;
+    public static final float MIN_CONF_ACTIONS = 0.4f;
 
     // cheating types:
     public static final float MIN_HAND_SCORES = 0.25f;
+    public static final float MIN_CONF_SCORES = 0.1f;
     public static final int MAX_UNCONFIDENT_POINTS = 4;
     public static final int NO_CHEATING = 0;
     public static final int CHEATING_PERSONS = 1;

@@ -360,9 +360,10 @@ export default function ExamScreen({ navigation, route }) {
           style={styles.camera}
           device={devices[camPosition]}
           isActive={true}
-          photo={true}
+          photo={false}
           frameProcessor={frameProcess}
           frameProcessorFps={2}
+          fps={20}
         // preset="low"
         />
       )}
