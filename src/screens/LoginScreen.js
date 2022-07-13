@@ -81,7 +81,7 @@ export default function LoginScreen({ navigation }) {
     !isLoading?
     <View style={styles.container}>
       <Text style={styles.logoText}>
-        Online Exam Anti-cheating
+        Chống gian lận {"\n"}thi cử trực tuyến
       </Text>
       <TextInput
         style={styles.input}

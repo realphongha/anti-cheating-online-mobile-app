@@ -199,9 +199,10 @@ export default function ExamScreen({ navigation, route }) {
         let last_ = res.data.last;
         setLast(last_);
         let now = new Date();
+        let endTime = new Date(start_.getTime() + last_*60000);
         if (now < start_) {
           setTimeStatus("not_started");
-        } else if (end) {
+        } else if (now > endTime) {
           setTimeStatus("ended");
         } else {
           setTimeStatus("in_progress");

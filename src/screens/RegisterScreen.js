@@ -54,7 +54,7 @@ export default function RegisterScreen({navigation}) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Email:</Text>
+      {/* <Text style={styles.text}>Email:</Text> */}
       <TextInput
         style={styles.input}
         onChangeText={setEmail}
@@ -64,7 +64,7 @@ export default function RegisterScreen({navigation}) {
         keyboardType="email-address"
         required
       />
-      <Text style={styles.text}>Mật khẩu:</Text>
+      {/* <Text style={styles.text}>Mật khẩu:</Text> */}
       <TextInput
         style={styles.input}
         onChangeText={setPassword}
@@ -74,7 +74,7 @@ export default function RegisterScreen({navigation}) {
         secureTextEntry={true}
         required
       />
-      <Text style={styles.text}>Xác nhận mật khẩu:</Text>
+      {/* <Text style={styles.text}>Xác nhận mật khẩu:</Text> */}
       <TextInput
         style={styles.input}
         onChangeText={setConfirmPassword}
@@ -84,7 +84,7 @@ export default function RegisterScreen({navigation}) {
         secureTextEntry={true}
         required
       />
-      <Text style={styles.text}>Họ tên:</Text>
+      {/* <Text style={styles.text}>Họ tên:</Text> */}
       <TextInput
         style={styles.input}
         onChangeText={setName}
@@ -93,7 +93,7 @@ export default function RegisterScreen({navigation}) {
         placeholderTextColor={constants.gray}
         required
       />
-      <Text style={styles.text}>Số điện thoại:</Text>
+      {/* <Text style={styles.text}>Số điện thoại:</Text> */}
       <TextInput
         style={styles.input}
         onChangeText={setPhone}
