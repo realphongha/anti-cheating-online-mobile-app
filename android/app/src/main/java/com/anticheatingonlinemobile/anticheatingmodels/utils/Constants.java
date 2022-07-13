@@ -22,9 +22,9 @@ public class Constants {
     // object detection:
     public static final int OBJ_DET_NUM_CLS = 5;
     public static final int REG_MAX = 7;
-    public static final float IOU_THRESH = 0.2f;
+    public static final float IOU_THRESH = 0.5f;
     public static final int[] STRIDES = {8, 16, 32, 64};
-    public static final float[] SCORE_THRESH = {0.4f, 0.35f, 0.2f, 0.2f, 0.35f};
+    public static final float[] SCORE_THRESH = {0.35f, 0.35f, 0.2f, 0.2f, 0.35f};
     public static final String[] OBJ_DET_CLASSES = {"person", "laptop", "mouse",
         "keyboard", "cell phone"};
     public static final int[] OBJ_DET_CLASSES_NUM = {0, 1, 2, 3, 4};
