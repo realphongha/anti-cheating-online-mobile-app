@@ -100,9 +100,11 @@ export default function ClassesScreen({ navigation }) {
   const getStatus = (class_) => {
     let start = new Date(class_.start["$date"]);
     let end = class_.end?new Date(class_.end["$date"]):null;
-    if (new Date() < start){
+    let now = new Date();
+    let endTime = new Date(start.getTime() + class_.start*60000);
+    if (now < start){
       return 0;
-    } else if (end) {
+    } else if (now > endTime) {
       return 2;
     } else {
       return 1;
