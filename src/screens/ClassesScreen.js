@@ -101,7 +101,7 @@ export default function ClassesScreen({ navigation }) {
     let start = new Date(class_.start["$date"]);
     let end = class_.end?new Date(class_.end["$date"]):null;
     let now = new Date();
-    let endTime = new Date(start.getTime() + class_.start*60000);
+    let endTime = new Date(start.getTime() + class_.last*60000);
     if (now < start){
       return 0;
     } else if (now > endTime) {
