@@ -1,5 +1,6 @@
 # anti-cheating-online-mobile-app
-Mobile application for anti cheating online system
+React Native mobile application for anti cheating online system with deep learning computer vision models running directly on devices.  
+Our anti-cheating system for online exams developed with microservice architecture includes this mobile application, [a React.JS web application for supervisors](https://github.com/realphongha/anti-cheating-online-web-app) and a backend server written in Flask that can be found [here](https://github.com/realphongha/anti-cheating-online-server).
 
 # How to install
 Clone this repo: ```https://github.com/realphongha/anti-cheating-online-mobile-app.git```   
